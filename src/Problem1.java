@@ -1,56 +1,52 @@
 public class Problem1 {
+
     public int countFreqBrute(int key, int[] A) {
+        if (A == null || A.length == 0) return 0;
         int count = 0;
-        for (int i = 0; i < A.length; i++) {
-            if (A[i] == key) {
-                count++;
-            }
+        for (int num : A) {
+            if (num == key) count++;
         }
         return count;
     }
 
     public int countFreqSmart(int key, int[] A) {
-        int first = findFirst(key, A, 0, A.length - 1);
-        if (first == -1) {
-            return 0;
-        }
-        int last = findLast(key, A, 0, A.length - 1);
+        if (A == null || A.length == 0) return 0;
+        int first = findFirst(key, A);
+        if (first == -1) return 0;
+        int last = findLast(key, A);
         return last - first + 1;
     }
-    private int findFirst(int key, int[] A, int left, int right) {
-        if (left > right) {
-            return -1;
-        }
-        int mid = (left + right) / 2;
-        if (A[mid] == key) {
-            int result = findFirst(key, A, left, mid - 1);
-            if (result == -1) {
-                return mid;
+
+    private int findFirst(int key, int[] A) {
+        int left = 0, right = A.length - 1, res = -1;
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (A[mid] == key) {
+                res = mid;
+                right = mid - 1;
+            } else if (A[mid] < key) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
             }
-            return result;
         }
-        if (A[mid] < key) {
-            return findFirst(key, A, mid + 1, right);
-        }
-        return findFirst(key, A, left, mid - 1);
+        return res;
     }
 
-    private int findLast(int key, int[] A, int left, int right) {
-        if (left > right) {
-            return -1;
-        }
-        int mid = (left + right) / 2;
-        if (A[mid] == key) {
-            int result = findLast(key, A, mid + 1, right);
-            if (result == -1) {
-                return mid;
+    private int findLast(int key, int[] A) {
+        int left = 0, right = A.length - 1, res = -1;
+        while (left <= right) {
+            int mid = left + (right - left) / 2;
+            if (A[mid] == key) {
+                res = mid;
+                left = mid + 1;
+            } else if (A[mid] < key) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
             }
-            return result;
         }
-        if (A[mid] < key) {
-            return findLast(key, A, mid + 1, right);
-        }
-        return findLast(key, A, left, mid - 1);
+        return res;
     }
 
     public static void main(String[] args) {

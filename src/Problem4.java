@@ -1,3 +1,6 @@
+import java.util.Arrays;
+import java.util.Comparator;
+
 public class Problem4 {
 
     public double minDistBrute(double[][] p) {
@@ -17,24 +20,33 @@ public class Problem4 {
     }
 
     public double minDistSmart(double[][] p) {
-        return closest(p, 0, p.length - 1);
+        if (p == null || p.length < 2) return 0.0;
+        double[][] sortedP = p.clone();
+        Arrays.sort(sortedP, Comparator.comparingDouble(a -> a[0]));
+        return closest(sortedP, 0, sortedP.length - 1);
     }
 
     private double closest(double[][] p, int left, int right) {
-        if (right - left <= 1) {
-            return distance(p[left], p[right]);
+        if (right - left <= 2) {
+            double min = Double.MAX_VALUE;
+            for (int i = left; i <= right; i++) {
+                for (int j = i + 1; j <= right; j++) {
+                    min = Math.min(min, distance(p[i], p[j]));
+                }
+            }
+            return min;
         }
 
         int mid = (left + right) / 2;
-
-        double leftMin = closest(p, left, mid);
-        double rightMin = closest(p, mid + 1, right);
-
-        double min = Math.min(leftMin, rightMin);
+        double min = Math.min(closest(p, left, mid), closest(p, mid + 1, right));
 
         for (int i = left; i <= right; i++) {
+            if (Math.abs(p[i][0] - p[mid][0]) >= min) continue;
             for (int j = i + 1; j <= right; j++) {
-                min = Math.min(min, distance(p[i], p[j]));
+                if (p[j][0] - p[i][0] >= min) break;
+                if (Math.abs(p[j][1] - p[i][1]) < min) {
+                    min = Math.min(min, distance(p[i], p[j]));
+                }
             }
         }
 
@@ -48,6 +60,11 @@ public class Problem4 {
         return Math.sqrt(x * x + y * y);
     }
 
-    static void main() {
+    public static void main(String[] args) {
+        Problem4 solver = new Problem4();
+        double[][] p = {{0, 0}, {3, 4}, {-5, -3}};
+
+        System.out.println(solver.minDistBrute(p));
+        System.out.println(solver.minDistSmart(p));
     }
 }

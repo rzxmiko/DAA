@@ -50,12 +50,14 @@ public class Problem3 {
 
         int middleSum = bestLeft + bestRight;
 
-        return Math.max(
-                Math.max(leftSum, rightSum),
-                middleSum
-        );
+        return Math.max(Math.max(leftSum, rightSum), middleSum);
     }
 
-    static void main() {
+    public static void main(String[] args) {
+        Problem3 solver = new Problem3();
+        int[] A = {-17, 5, 3, -10, 6, 1, 4, -3, 8, 1, -13, 4};
+
+        System.out.println(solver.maxSumBrute(A));
+        System.out.println(solver.maxSumSmart(A));
     }
 }

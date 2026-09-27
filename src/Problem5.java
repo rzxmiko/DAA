@@ -1,144 +1,116 @@
+import java.math.BigInteger;
 public class Problem5 {
 
     public String multBrute(String A, String B) {
-        if (A.equals("0") || B.equals("0")) {
-            return "0";
-        }
+        if (A.equals("0") || B.equals("0")) return "0";
 
-        int[] result = new int[A.length() + B.length()];
+        int n = A.length(), m = B.length();
+        int[] result = new int[n + m];
 
-        for (int i = A.length() - 1; i >= 0; i--) {
-            for (int j = B.length() - 1; j >= 0; j--) {
+        for (int i = n - 1; i >= 0; i--) {
+            for (int j = m - 1; j >= 0; j--) {
+                int mul = (A.charAt(i) - '0') * (B.charAt(j) - '0');
+                int sum = mul + result[i + j + 1];
 
-                int a = A.charAt(i) - '0';
-                int b = B.charAt(j) - '0';
-
-                int pos = i + j + 1;
-
-                int value = a * b + result[pos];
-
-                result[pos] = value % 10;
-                result[pos - 1] += value / 10;
+                result[i + j + 1] = sum % 10;
+                result[i + j] += sum / 10;
             }
         }
 
-        StringBuilder answer = new StringBuilder();
-
-        for (int digit : result) {
-            if (answer.length() == 0 && digit == 0) {
-                continue;
+        StringBuilder sb = new StringBuilder();
+        for (int p : result) {
+            if (!(sb.length() == 0 && p == 0)) {
+                sb.append(p);
             }
-
-            answer.append(digit);
         }
 
-        return answer.toString();
+        return sb.length() == 0 ? "0" : sb.toString();
     }
 
     public String multSmart(String A, String B) {
-        if (A.equals("0") || B.equals("0")) {
-            return "0";
-        }
-
-        return multiply(A, B);
-    }
-
-    private String multiply(String A, String B) {
-        if (A.length() == 1 && B.length() == 1) {
-            int a = A.charAt(0) - '0';
-            int b = B.charAt(0) - '0';
-
-            return String.valueOf(a * b);
-        }
+        if (A.equals("0") || B.equals("0")) return "0";
 
         int n = Math.max(A.length(), B.length());
 
-        while (n % 2 != 0) {
-            n++;
+        if (n <= 4) {
+            return String.valueOf(Long.parseLong(A) * Long.parseLong(B));
         }
 
-        A = addZeros(A, n);
-        B = addZeros(B, n);
+        while (A.length() < n) A = "0" + A;
+        while (B.length() < n) B = "0" + B;
 
-        int mid = n / 2;
+        int half = n / 2;
 
-        String a1 = A.substring(0, mid);
-        String a0 = A.substring(mid);
+        String a1 = A.substring(0, n - half);
+        String a0 = A.substring(n - half);
+        String b1 = B.substring(0, n - half);
+        String b0 = B.substring(n - half);
 
-        String b1 = B.substring(0, mid);
-        String b0 = B.substring(mid);
+        String p2 = multSmart(a1, b1);
+        String p0 = multSmart(a0, b0);
+        String p1 = multSmart(addStrings(a1, a0), addStrings(b1, b0));
 
-        String z2 = multiply(a1, b1);
-        String z0 = multiply(a0, b0);
+        String mid = subStrings(subStrings(p1, p2), p0);
 
-        String z1 = multiply(
-                add(a1, a0),
-                add(b1, b0)
-        );
+        String term2 = p2.equals("0") ? "0" : p2 + "0".repeat(2 * half);
+        String term1 = mid.equals("0") ? "0" : mid + "0".repeat(half);
 
-        z1 = subtract(z1, z2);
-        z1 = subtract(z1, z0);
-
-        return add(
-                add(shift(z2, n), shift(z1, mid)),
-                z0
-        );
+        String res = addStrings(addStrings(term2, term1), p0);
+        return cleanZeros(res);
     }
 
-    private String add(String A, String B) {
-        StringBuilder result = new StringBuilder();
-
-        int i = A.length() - 1;
-        int j = B.length() - 1;
-        int carry = 0;
+    private String addStrings(String a, String b) {
+        StringBuilder sb = new StringBuilder();
+        int i = a.length() - 1, j = b.length() - 1, carry = 0;
 
         while (i >= 0 || j >= 0 || carry > 0) {
-            int a = i >= 0 ? A.charAt(i--) - '0' : 0;
-            int b = j >= 0 ? B.charAt(j--) - '0' : 0;
-
-            int sum = a + b + carry;
-
-            result.append(sum % 10);
+            int sum = carry;
+            if (i >= 0) sum += a.charAt(i--) - '0';
+            if (j >= 0) sum += b.charAt(j--) - '0';
+            sb.append(sum % 10);
             carry = sum / 10;
         }
 
-        return result.reverse().toString();
+        return sb.reverse().toString();
     }
 
-    private String subtract(String A, String B) {
-        StringBuilder result = new StringBuilder();
-
-        int i = A.length() - 1;
-        int j = B.length() - 1;
-        int borrow = 0;
+    private String subStrings(String a, String b) {
+        StringBuilder sb = new StringBuilder();
+        int i = a.length() - 1, j = b.length() - 1, borrow = 0;
 
         while (i >= 0) {
-            int a = A.charAt(i--) - '0';
-            int b = j >= 0 ? B.charAt(j--) - '0' : 0;
+            int diff = (a.charAt(i--) - '0') - borrow;
+            if (j >= 0) diff -= (b.charAt(j--) - '0');
 
-            int value = a - b - borrow;
-
-            if (value < 0) {
-                value += 10;
+            if (diff < 0) {
+                diff += 10;
                 borrow = 1;
             } else {
                 borrow = 0;
             }
-
-            result.append(value);
+            sb.append(diff);
         }
 
-        return result.reverse().toString();
+        return cleanZeros(sb.reverse().toString());
     }
 
-    private String shift(String A, int zeros) {
-        return A + "0".repeat(zeros);
+    private String cleanZeros(String s) {
+        int i = 0;
+        while (i < s.length() - 1 && s.charAt(i) == '0') i++;
+        return s.substring(i);
     }
 
-    private String addZeros(String A, int n) {
-        return "0".repeat(n - A.length()) + A;
-    }
+    public static void main(String[] args) {
+        Problem5 solver = new Problem5();
 
-    static void main() {
+        String A = "12345678987654321";
+        String B = "98765432123456789";
+
+        BigInteger a = new BigInteger(A);
+        BigInteger b = new BigInteger(B);
+        System.out.println("Expected: " + a.multiply(b));
+
+        System.out.println("Brute:    " + solver.multBrute(A, B));
+        System.out.println("Smart:    " + solver.multSmart(A, B));
     }
 }
