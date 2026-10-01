@@ -1,70 +1,81 @@
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
 public class Problem4 {
 
     public double minDistBrute(double[][] p) {
-        double min = Double.MAX_VALUE;
-
+        double best = Double.MAX_VALUE;
         for (int i = 0; i < p.length; i++) {
             for (int j = i + 1; j < p.length; j++) {
-                double d = distance(p[i], p[j]);
-
-                if (d < min) {
-                    min = d;
-                }
+                double d = dist(p[i], p[j]);
+                if (d < best) best = d;
             }
         }
-
-        return min;
+        return best;
     }
 
     public double minDistSmart(double[][] p) {
-        if (p == null || p.length < 2) return 0.0;
-        double[][] sortedP = p.clone();
-        Arrays.sort(sortedP, Comparator.comparingDouble(a -> a[0]));
-        return closest(sortedP, 0, sortedP.length - 1);
+        double[][] byX = p.clone();
+        Arrays.sort(byX, Comparator.comparingDouble(a -> a[0]));
+        return closestRec(byX);
     }
 
-    private double closest(double[][] p, int left, int right) {
-        if (right - left <= 2) {
-            double min = Double.MAX_VALUE;
-            for (int i = left; i <= right; i++) {
-                for (int j = i + 1; j <= right; j++) {
-                    min = Math.min(min, distance(p[i], p[j]));
+    private double closestRec(double[][] p) {
+        int n = p.length;
+        if (n <= 3) {
+
+            double best = Double.MAX_VALUE;
+            for (int i = 0; i < n; i++) {
+                for (int j = i + 1; j < n; j++) {
+                    best = Math.min(best, dist(p[i], p[j]));
                 }
             }
-            return min;
+            return best;
         }
 
-        int mid = (left + right) / 2;
-        double min = Math.min(closest(p, left, mid), closest(p, mid + 1, right));
+        int mid = n / 2;
+        double midX = p[mid][0];
+        double[][] left = Arrays.copyOfRange(p, 0, mid);
+        double[][] right = Arrays.copyOfRange(p, mid, n);
 
-        for (int i = left; i <= right; i++) {
-            if (Math.abs(p[i][0] - p[mid][0]) >= min) continue;
-            for (int j = i + 1; j <= right; j++) {
-                if (p[j][0] - p[i][0] >= min) break;
-                if (Math.abs(p[j][1] - p[i][1]) < min) {
-                    min = Math.min(min, distance(p[i], p[j]));
-                }
+        double dLeft = closestRec(left);
+        double dRight = closestRec(right);
+        double d = Math.min(dLeft, dRight);
+
+        List<double[]> strip = new ArrayList<>();
+        for (double[] point : p) {
+            if (Math.abs(point[0] - midX) < d) {
+                strip.add(point);
             }
         }
 
-        return min;
+        strip.sort(Comparator.comparingDouble(a -> a[1]));
+
+        for (int i = 0; i < strip.size(); i++) {
+
+            for (int j = i + 1; j < strip.size() && (strip.get(j)[1] - strip.get(i)[1]) < d; j++) {
+                d = Math.min(d, dist(strip.get(i), strip.get(j)));
+            }
+        }
+        return d;
     }
 
-    private double distance(double[] a, double[] b) {
-        double x = a[0] - b[0];
-        double y = a[1] - b[1];
+    private double dist(double[] a, double[] b) {
+        double dx = a[0] - b[0];
+        double dy = a[1] - b[1];
+        return Math.sqrt(dx * dx + dy * dy);
+    }
 
-        return Math.sqrt(x * x + y * y);
+    static void main() {
+        Problem4 solver = new Problem4();
+        double[][] p = {{0, 0}, {3, 4}, {-5, -3}};
+        System.out.println(solver.minDistBrute(p));
+        System.out.println(solver.minDistSmart(p));
     }
 
     public static void main(String[] args) {
-        Problem4 solver = new Problem4();
-        double[][] p = {{0, 0}, {3, 4}, {-5, -3}};
-
-        System.out.println(solver.minDistBrute(p));
-        System.out.println(solver.minDistSmart(p));
+        main();
     }
 }
