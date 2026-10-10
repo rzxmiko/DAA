@@ -1,48 +1,34 @@
 public class IntArrayDeque implements IntDeque {
-    // use IntArray as a circular array as back-end for this deque
-    private IntArray array;
+    private IntArray data;
     private int head;
     private int tail;
+    private int size;
 
     public IntArrayDeque() {
-        // creates an empty deque
-        this.array = new IntArray();
-        this.head = 0;
-        this.tail = 0;
+        data = createArray(4);
+        head = 0;
+        tail = 0;
+        size = 0;
     }
 
     @Override
     public void addFirst(int value) {
-        if (array.size() == 0) {
-            array.add(value);
-            head = 0;
-            tail = 0;
-        } else {
-            head = (head - 1 + array.size()) % array.size();
-            if (head == tail) {
-                array.add(head, value);
-                tail = (tail + 1) % array.size();
-            } else {
-                array.set(head, value);
-            }
+        if (size == data.size()) {
+            grow();
         }
+        head = (head - 1 + data.size()) % data.size();
+        data.set(head, value);
+        size++;
     }
 
     @Override
     public void addLast(int value) {
-        if (array.size() == 0) {
-            array.add(value);
-            head = 0;
-            tail = 0;
-        } else {
-            int capacity = array.size();
-            tail = (tail + 1) % capacity;
-            if (tail == head) {
-                array.add(tail, value);
-            } else {
-                array.set(tail, value);
-            }
+        if (size == data.size()) {
+            grow();
         }
+        data.set(tail, value);
+        tail = (tail + 1) % data.size();
+        size++;
     }
 
     @Override
@@ -50,15 +36,10 @@ public class IntArrayDeque implements IntDeque {
         if (isEmpty()) {
             throw new IllegalStateException("Deque is empty");
         }
-        int value = array.get(head);
-        if (size() == 1) {
-            array.remove(head);
-            head = 0;
-            tail = 0;
-        } else {
-            head = (head + 1) % array.size();
-        }
-        return value;
+        int removed = data.get(head);
+        head = (head + 1) % data.size();
+        size--;
+        return removed;
     }
 
     @Override
@@ -66,15 +47,9 @@ public class IntArrayDeque implements IntDeque {
         if (isEmpty()) {
             throw new IllegalStateException("Deque is empty");
         }
-        int value = array.get(tail);
-        if (size() == 1) {
-            array.remove(tail);
-            head = 0;
-            tail = 0;
-        } else {
-            tail = (tail - 1 + array.size()) % array.size();
-        }
-        return value;
+        tail = (tail - 1 + data.size()) % data.size();
+        size--;
+        return data.get(tail);
     }
 
     @Override
@@ -82,7 +57,7 @@ public class IntArrayDeque implements IntDeque {
         if (isEmpty()) {
             throw new IllegalStateException("Deque is empty");
         }
-        return array.get(head);
+        return data.get(head);
     }
 
     @Override
@@ -90,39 +65,49 @@ public class IntArrayDeque implements IntDeque {
         if (isEmpty()) {
             throw new IllegalStateException("Deque is empty");
         }
-        return array.get(tail);
+        int lastIndex = (tail - 1 + data.size()) % data.size();
+        return data.get(lastIndex);
     }
 
     @Override
     public int size() {
-        if (array.isEmpty()) {
-            return 0;
-        }
-        return (tail - head + array.size()) % array.size() + 1;
+        return size;
     }
 
     @Override
     public boolean isEmpty() {
-        return array.isEmpty();
+        return size == 0;
     }
 
     @Override
     public String toString() {
-        // "[]" for empty deque
-        // "[7, 8, 6]" for deque containing elements: 7, 8, 6. (front-first)
-        if (isEmpty()) {
-            return "[]";
-        }
         StringBuilder sb = new StringBuilder("[");
-        int sz = size();
-        for (int i = 0; i < sz; i++) {
-            int index = (head + i) % array.size();
-            sb.append(array.get(index));
-            if (i < sz - 1) {
+        for (int i = 0; i < size; i++) {
+            if (i > 0) {
                 sb.append(", ");
             }
+            int index = (head + i) % data.size();
+            sb.append(data.get(index));
         }
         sb.append("]");
         return sb.toString();
+    }
+
+    private IntArray createArray(int capacity) {
+        IntArray array = new IntArray();
+        for (int i = 0; i < capacity; i++) {
+            array.add(0);
+        }
+        return array;
+    }
+
+    private void grow() {
+        IntArray bigger = createArray(data.size() * 2);
+        for (int i = 0; i < size; i++) {
+            bigger.set(i, data.get((head + i) % data.size()));
+        }
+        data = bigger;
+        head = 0;
+        tail = size;
     }
 }
