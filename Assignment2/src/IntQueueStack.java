@@ -1,22 +1,17 @@
 public class IntQueueStack implements IntStack {
-    // use two queues as back-end
-    private IntLinkedListQueue q1;
-    private IntLinkedListQueue q2;
 
-    public IntQueueStack() {
-        this.q1 = new IntLinkedListQueue();
-        this.q2 = new IntLinkedListQueue();
-    }
+    private IntLinkedListQueue main = new IntLinkedListQueue();
+    private IntLinkedListQueue helper = new IntLinkedListQueue();
 
     @Override
     public void push(int value) {
-        q2.enqueue(value);
-        while (!q1.isEmpty()) {
-            q2.enqueue(q1.dequeue());
+        helper.enqueue(value);
+        while (!main.isEmpty()) {
+            helper.enqueue(main.dequeue());
         }
-        IntLinkedListQueue temp = q1;
-        q1 = q2;
-        q2 = temp;
+        IntLinkedListQueue temp = main;
+        main = helper;
+        helper = temp;
     }
 
     @Override
@@ -24,7 +19,7 @@ public class IntQueueStack implements IntStack {
         if (isEmpty()) {
             throw new IllegalStateException("Stack is empty");
         }
-        return q1.dequeue();
+        return main.dequeue();
     }
 
     @Override
@@ -32,42 +27,31 @@ public class IntQueueStack implements IntStack {
         if (isEmpty()) {
             throw new IllegalStateException("Stack is empty");
         }
-        return q1.peek();
+        return main.peek();
     }
 
     @Override
     public int size() {
-        return q1.size();
+        return main.size();
     }
 
     @Override
     public boolean isEmpty() {
-        return q1.isEmpty();
+        return main.isEmpty();
     }
 
     @Override
     public String toString() {
-        // returns String representation of the stack
-        // "[]" for empty stack
-        // "[7, 8, 6]" for non-empty one (bottom-element-first)
-        if (isEmpty()) {
-            return "[]";
+        IntArray items = new IntArray();
+        int n = main.size();
+        for (int i = 0; i < n; i++) {
+            int value = main.dequeue();
+            items.add(value);
+            main.enqueue(value);
         }
-        IntLinkedListQueue temp = new IntLinkedListQueue();
-        IntArray values = new IntArray();
-
-        while (!q1.isEmpty()) {
-            int val = q1.dequeue();
-            values.add(val);
-            temp.enqueue(val);
-        }
-        while (!temp.isEmpty()) {
-            q1.enqueue(temp.dequeue());
-        }
-
         StringBuilder sb = new StringBuilder("[");
-        for (int i = values.size() - 1; i >= 0; i--) {
-            sb.append(values.get(i));
+        for (int i = items.size() - 1; i >= 0; i--) {
+            sb.append(items.get(i));
             if (i > 0) {
                 sb.append(", ");
             }
