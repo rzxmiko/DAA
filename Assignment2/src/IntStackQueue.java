@@ -1,12 +1,11 @@
 public class IntStackQueue implements IntQueue {
-    // use two stacks as back-end
+
     private IntArrayStack inStack;
     private IntArrayStack outStack;
 
     public IntStackQueue() {
-        // creates an empty queue
-        this.inStack = new IntArrayStack();
-        this.outStack = new IntArrayStack();
+        inStack = new IntArrayStack();
+        outStack = new IntArrayStack();
     }
 
     @Override
@@ -16,19 +15,19 @@ public class IntStackQueue implements IntQueue {
 
     @Override
     public int dequeue() {
-        if (isEmpty()) {
+        shift();
+        if (outStack.isEmpty()) {
             throw new IllegalStateException("Queue is empty");
         }
-        shiftStacks();
         return outStack.pop();
     }
 
     @Override
     public int peek() {
-        if (isEmpty()) {
+        shift();
+        if (outStack.isEmpty()) {
             throw new IllegalStateException("Queue is empty");
         }
-        shiftStacks();
         return outStack.peek();
     }
 
@@ -44,51 +43,41 @@ public class IntStackQueue implements IntQueue {
 
     @Override
     public String toString() {
-        // "[]" for empty queue
-        // "[7, 8, 6]" for queue containing elements: 7, 8, 6. (head-first)
-        if (isEmpty()) {
-            return "[]";
-        }
-        IntArray values = new IntArray();
+        IntArrayStack temp = new IntArrayStack();
+        StringBuilder sb = new StringBuilder("[");
+        boolean first = true;
 
-        // Сначала собираем элементы из outStack (они идут от head к tail)
-        IntArrayStack tempOut = new IntArrayStack();
         while (!outStack.isEmpty()) {
             int val = outStack.pop();
-            values.add(val);
-            tempOut.push(val);
-        }
-        while (!tempOut.isEmpty()) {
-            outStack.push(tempOut.pop());
-        }
-
-        // Затем собираем элементы из inStack (они лежат в обратном порядке)
-        IntArrayStack tempIn = new IntArrayStack();
-        IntArray inValues = new IntArray();
-        while (!inStack.isEmpty()) {
-            int val = inStack.pop();
-            inValues.add(val);
-            tempIn.push(val);
-        }
-        while (!tempIn.isEmpty()) {
-            inStack.push(tempIn.pop());
-        }
-        for (int i = inValues.size() - 1; i >= 0; i--) {
-            values.add(inValues.get(i));
-        }
-
-        StringBuilder sb = new StringBuilder("[");
-        for (int i = 0; i < values.size(); i++) {
-            sb.append(values.get(i));
-            if (i < values.size() - 1) {
+            if (!first) {
                 sb.append(", ");
             }
+            sb.append(val);
+            first = false;
+            temp.push(val);
         }
+        while (!temp.isEmpty()) {
+            outStack.push(temp.pop());
+        }
+
+        while (!inStack.isEmpty()) {
+            temp.push(inStack.pop());
+        }
+        while (!temp.isEmpty()) {
+            int val = temp.pop();
+            if (!first) {
+                sb.append(", ");
+            }
+            sb.append(val);
+            first = false;
+            inStack.push(val);
+        }
+
         sb.append("]");
         return sb.toString();
     }
 
-    private void shiftStacks() {
+    private void shift() {
         if (outStack.isEmpty()) {
             while (!inStack.isEmpty()) {
                 outStack.push(inStack.pop());
