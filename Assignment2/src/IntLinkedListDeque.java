@@ -1,54 +1,65 @@
-public class IntLinkedListDeque implements IntDeque{
-    // use IntLinkedList as back-end for this deque
+public class IntLinkedListDeque implements IntDeque {
+
+    private IntLinkedList list;
 
     public IntLinkedListDeque() {
-        // creates an empty deque
+        list = new IntLinkedList();
     }
 
     @Override
     public void addFirst(int value) {
-
+        list.add(0, value);
     }
 
     @Override
     public void addLast(int value) {
-
+        list.add(value);
     }
 
     @Override
     public int removeFirst() {
-        return 0;
+        if (isEmpty()) {
+            throw new IllegalStateException("Deque is empty");
+        }
+        return list.remove(0);
     }
 
     @Override
     public int removeLast() {
-        return 0;
+        if (isEmpty()) {
+            throw new IllegalStateException("Deque is empty");
+        }
+        return list.remove(list.size() - 1);
     }
 
     @Override
     public int peekFirst() {
-        return 0;
+        if (isEmpty()) {
+            throw new IllegalStateException("Deque is empty");
+        }
+        return list.get(0);
     }
 
     @Override
     public int peekLast() {
-        return 0;
+        if (isEmpty()) {
+            throw new IllegalStateException("Deque is empty");
+        }
+        return list.get(list.size() - 1);
     }
 
     @Override
     public int size() {
-        return 0;
+        return list.size();
     }
 
     @Override
     public boolean isEmpty() {
-        return false;
+        return list.isEmpty();
     }
 
     @Override
     public String toString() {
-        // "[]" for empty deque
-        // "[7, 8, 6]" for deque containing elements: 7, 8, 6. (front-first)
-        return super.toString();
+        return list.toString();
     }
 }
